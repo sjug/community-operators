@@ -55,11 +55,13 @@ jobs:
         echo "::set-output name=op_pr_ok::1"
     - name: op-cosmetics-change
       id: op-cosmetics-change
-      if: steps.op-traffic-light.outputs.op_pr_ok == '1'
+      if: steps.op-traffic-light.outputs.op_test_modified_csvs != '' && steps.op-traffic-light.outputs.op_test_modified_others == ''
       env:
         OP_TEST_LABELS: "${{ join(github.event.pull_request.labels.*.name, ' ') }}"
+        OP_TEST_MODIFIED_CSVS: "${{ steps.op-traffic-light.outputs.op_test_modified_csvs }}"
       run: |
         echo "global labels $OP_TEST_LABELS"
+        echo "OP_TEST_MODIFIED_CSVS=$OP_TEST_MODIFIED_CSVS"
         echo "We have to use script from operator-framework/operator-test-playbooks "
         echo "::set-output name=op_cosmetics_ok::0"
 
