@@ -49,6 +49,7 @@ jobs:
       run: |
         echo "global labels $OP_TEST_LABELS"
         bash <(curl -sL https://raw.githubusercontent.com/operator-framework/operator-test-playbooks/support/script_pull_target2/upstream/test/oprt.sh)
+        echo "AAA=${{ steps.op-traffic-light.outputs.op_test_modified_csvs }}"
     - name: Verify 
       id: verify
       env:
@@ -56,7 +57,7 @@ jobs:
         OP_TEST_MODIFIED_CSVS: "${{ steps.op-traffic-light.outputs.op_test_modified_csvs }}"
         OP_TEST_MODIFIED_CSVS_OTHERS: "${{ steps.op-traffic-light.outputs.op_test_modified_others }}"
       run: |
-        echo ::set-output name=op_check_cosmetics::0
+        echo ::set-output name=op_check_cosmetics::$OP_TEST_ALLOW_SERIOUS_CHANGES
         echo "xxx${OP_TEST_MODIFIED_CSVS_OTHERS}xxx"
         [[ $OP_TEST_ALLOW_SERIOUS_CHANGES -eq 1 ]] && { echo "::set-output name=op_check_cosmetics::0"; exit 0; }
         [ -n "$OP_TEST_MODIFIED_CSVS" ] && echo "::set-output name=op_check_cosmetics::1"
