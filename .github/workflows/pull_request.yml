@@ -57,6 +57,7 @@ jobs:
         OP_TEST_MODIFIED_CSVS_OTHERS: "${{ steps.op-traffic-light.outputs.op_test_modified_others }}"
       run: |
         echo ::set-output name=op_check_cosmetics::0
+        echo "xxx${OP_TEST_MODIFIED_CSVS_OTHERS}xxx"
         [ -z $OP_TEST_MODIFIED_CSVS_OTHERS ] || { echo "Not cosmetics change !!!"; exit 1; }
         [ -z $OP_TEST_MODIFIED_CSVS ] || echo "::set-output name=op_check_cosmetics::1"
         [[ $OP_TEST_ALLOW_SERIOUS_CHANGES -eq 1 ]] && echo "::set-output name=op_check_cosmetics::0"
