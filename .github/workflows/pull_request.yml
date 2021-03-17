@@ -39,7 +39,7 @@ jobs:
     #     repo-token: ${{ secrets.GITHUB_TOKEN }}
     #     repo-token-user-login: 'github-actions[bot]' # The user.login for temporary GitHub tokens
     #     allow-repeats: true # This is the default
-    - name: Operator test
+    - name: Operator traffic light
       id: op-traffic-light
       env:
         OP_TEST_LABELS: "${{ join(github.event.pull_request.labels.*.name, ' ') }}"
@@ -53,6 +53,10 @@ jobs:
         bash <(curl -sL https://raw.githubusercontent.com/operator-framework/community-operators/master/scripts/ci/actions-env)
         echo "We have to use script from operator-framework/operator-test-playbooks "
         echo "::set-output name=op_pr_ok::1"
+
+# allow/serious-changes-to-existing
+
+
     - name: op-cosmetics-change
       id: op-cosmetics-change
       if: steps.op-traffic-light.outputs.op_test_modified_csvs != '' && steps.op-traffic-light.outputs.op_test_modified_others == ''
