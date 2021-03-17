@@ -73,7 +73,7 @@ jobs:
         echo "${{ steps.op-traffic-light.outputs.op_test_set_label_operator_version_overwrite }}"
         echo "${{ steps.op-traffic-light.outputs.op_test_set_label_operator_recreate }}"
         echo "DONE"
-    - name: "Setting Operator version overwrite label"
+    - name: "Removing Operator recreate label when exists"
       uses: actions/github-script@v3
       if: steps.verify.outputs.op_check_cosmetics == '1' && steps.op-traffic-light.outputs.op_test_set_label_operator_version_overwrite == '1' && contains(github.event.pull_request.labels.*.name, 'allow/operator-recreate')
       with:
@@ -97,7 +97,7 @@ jobs:
             repo: context.repo.repo,
             labels: [ 'allow/operator-version-overwrite' ]
           })
-    - name: "Setting Operator version overwrite label"
+    - name: "Removing Operator version overwrite label when existsss"
       uses: actions/github-script@v3
       if: steps.verify.outputs.op_check_cosmetics == '1' && steps.op-traffic-light.outputs.op_test_set_label_operator_recreate == '1' && contains(github.event.pull_request.labels.*.name, 'allow/operator-version-overwrite')
       with:
@@ -109,7 +109,7 @@ jobs:
             repo: context.repo.repo,
             name: 'allow/operator-version-overwrite'
           })
-    - name: "Setting Operator version overwrite label"
+    - name: "Setting Operator recreate label"
       uses: actions/github-script@v3
       if: steps.verify.outputs.op_check_cosmetics == '1' && steps.op-traffic-light.outputs.op_test_set_label_operator_recreate == '1'
       with:
@@ -121,6 +121,30 @@ jobs:
             repo: context.repo.repo,
             labels: [ 'allow/operator-recreate' ]
           })
+
+    - name: "Remove needs-ok-to-test"
+      uses: actions/github-script@v3
+      if: steps.op-traffic-light.outputs.op_test_stream == 'upstream-community-operators' && contains(github.event.pull_request.labels.*.name, 'needs-ok-to-test')
+      with:
+        github-token: ${{secrets.GITHUB_TOKEN}}
+        script: |
+          github.issues.removeLabel({
+            issue_number: context.issue.number,
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            name: 'needs-ok-to-test'
+          })
+
+          
+    - name: "Run ok-to-test in case of community operators"
+      if:  steps.op-traffic-light.outputs.op_test_stream == 'community-operators' && contains(github.event.pull_request.labels.*.name, 'needs-ok-to-test')
+      uses: mshick/add-pr-comment@v1
+      with:
+        message: |
+          /ok-to-test
+        repo-token: ${{ secrets.GITHUB_TOKEN }}
+        repo-token-user-login: 'github-actions[bot]' # The user.login for temporary GitHub tokens
+        allow-repeats: true # This is the default
 
     # - name: "Setting Operator version overwrite label"
     #   if: steps.verify.outputs.op_check_cosmetics == '1' && steps.op-traffic-light.outputs.op_test_set_label_operator_version_overwrite == '1'
