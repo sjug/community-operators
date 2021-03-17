@@ -24,14 +24,14 @@ jobs:
     #     ref: ${{ github.event.pull_request.head.sha }}
     #     clean: false
     #     fetch-depth: '0'
-    - name: Get diff files
-      id: files
-      env:
-        OPRT_REPO: "${{ github.event.pull_request.head.repo.full_name }}" 
-        OPRT_SHA: "${{ github.event.pull_request.head.sha }}" 
-        OPRT_SRC_BRANCH: "support/action-01"
-      run: |
-        bash <(curl -sL https://raw.githubusercontent.com/operator-framework/operator-test-playbooks/support/script_pull_target2/upstream/test/oprt_diff.sh)
+    # - name: Get diff files
+    #   id: files
+    #   env:
+    #     OPRT_REPO: "${{ github.event.pull_request.head.repo.full_name }}" 
+    #     OPRT_SHA: "${{ github.event.pull_request.head.sha }}" 
+    #     OPRT_SRC_BRANCH: "support/action-01"
+    #   run: |
+    #     bash <(curl -sL https://raw.githubusercontent.com/operator-framework/operator-test-playbooks/support/script_pull_target2/upstream/test/oprt.sh)
     # - uses: mshick/add-pr-comment@v1
     #   with:
     #     message: |
@@ -43,31 +43,85 @@ jobs:
       id: op-traffic-light
       env:
         OP_TEST_LABELS: "${{ join(github.event.pull_request.labels.*.name, ' ') }}"
-        OP_TEST_ADDED_MODIFIED_FILES: "${{ steps.files.outputs.added_modified }}"
-        OP_TEST_MODIFIED_FILES: "${{ steps.files.outputs.modified }}"
-        OP_TEST_RENAMED_FILES: "${{ steps.files.outputs.renamed }}"
-        OP_TEST_REMOVED_FILES: "${{ steps.files.outputs.removed }}"
+        OPRT_REPO: "${{ github.event.pull_request.head.repo.full_name }}" 
+        OPRT_SHA: "${{ github.event.pull_request.head.sha }}" 
+        OPRT_SRC_BRANCH: "support/action-01"
       run: |
         echo "global labels $OP_TEST_LABELS"
-        cd community-operators
-        bash <(curl -sL https://raw.githubusercontent.com/operator-framework/community-operators/master/scripts/ci/actions-env)
-        echo "We have to use script from operator-framework/operator-test-playbooks "
-        echo "::set-output name=op_pr_ok::1"
-
-# allow/serious-changes-to-existing
-
-
-    - name: op-cosmetics-change
-      id: op-cosmetics-change
-      if: steps.op-traffic-light.outputs.op_test_modified_csvs != '' && steps.op-traffic-light.outputs.op_test_modified_others == ''
+        bash <(curl -sL https://raw.githubusercontent.com/operator-framework/operator-test-playbooks/support/script_pull_target2/upstream/test/oprt.sh)
+    - name: Verify 
+      id: verify
       env:
-        OP_TEST_LABELS: "${{ join(github.event.pull_request.labels.*.name, ' ') }}"
+        OP_TEST_ALLOW_SERIOUS_CHANGES: "${{ steps.op-traffic-light.outputs.op_test_allow_serious_changes }}"
+        OP_TEST_MODIFIED_CSVS: "${{ steps.op-traffic-light.outputs.op_test_modified_csvs }}"
+        OP_TEST_MODIFIED_CSVS_OTHERS: "${{ steps.op-traffic-light.outputs.op_test_modified_others }}"
+      run: |
+        echo ::set-output name=op_check_cosmetics::0
+        [ -z $OP_TEST_MODIFIED_CSVS_OTHERS ] || { echo "Not cosmetics change !!!"; exit 1; }
+        [ -z $OP_TEST_MODIFIED_CSVS ] || echo "::set-output name=op_check_cosmetics::1"
+        [[ $OP_TEST_ALLOW_SERIOUS_CHANGES -eq 1 ]] && echo "::set-output name=op_check_cosmetics::0"
+
+    - name: Operator cosmetics change check
+      id: op-cosmetics-change-check
+      if: steps.verify.outputs.op_check_cosmetics == '1'
+      env:
         OP_TEST_MODIFIED_CSVS: "${{ steps.op-traffic-light.outputs.op_test_modified_csvs }}"
       run: |
-        echo "global labels $OP_TEST_LABELS"
         echo "OP_TEST_MODIFIED_CSVS=$OP_TEST_MODIFIED_CSVS"
         echo "We have to use script from operator-framework/operator-test-playbooks "
-        echo "::set-output name=op_cosmetics_ok::0"
+        echo "::set-output name=op_::0"
+
+
+    - name: "Setting Operator version overwrite label"
+      uses: actions/github-script@v3
+      if: steps.verify.outputs.op_check_cosmetics == '1' && steps.op-traffic-light.outputs.op_test_set_label_operator_version_overwrite == '1'
+      with:
+        github-token: ${{secrets.GITHUB_TOKEN}}
+        script: |
+          await github.issues.removeLabel({
+            issue_number: context.issue.number,
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            name: 'allow/operator-recreate'
+          })
+          await github.issues.addLabels({
+            issue_number: context.issue.number,
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            labels: ['allow/operator-version-overwrite' ]
+          })
+    - name: "Setting Operator version overwrite label"
+      uses: actions/github-script@v3
+      if: steps.verify.outputs.op_check_cosmetics == '1' && steps.op-traffic-light.outputs.op_test_set_label_operator_recreate == '1'
+      with:
+        github-token: ${{secrets.GITHUB_TOKEN}}
+        script: |
+          await github.issues.removeLabel({
+            issue_number: context.issue.number,
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            name: 'allow/operator-version-overwrite'
+          })
+          await github.issues.addLabels({
+            issue_number: context.issue.number,
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            labels: [ 'allow/operator-recreate' ]
+          })
+
+    # - name: "Setting Operator version overwrite label"
+    #   if: steps.verify.outputs.op_check_cosmetics == '1' && steps.op-traffic-light.outputs.op_test_set_label_operator_version_overwrite == '1'
+    #   uses: actions/github-script@v3
+    #   with:
+    #     github-token: ${{secrets.GITHUB_TOKEN}}
+    #     script: |
+    #       github.issues.addLabels({
+    #         issue_number: context.issue.number,
+    #         owner: context.repo.owner,
+    #         repo: context.repo.repo,
+    #         labels: ['allow/operator-version-overwrite' ]
+    #       })
+
 
     # - uses: actions/github-script@v3
     #   # if: steps.op-traffic-light.outputs.op_cosmetics_ok == '1'
