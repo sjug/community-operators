@@ -43,7 +43,8 @@ jobs:
       id: op-traffic-light
       env:
         OP_TEST_LABELS: "${{ join(github.event.pull_request.labels.*.name, ' ') }}"
-        OP_TEST_MODIFIED_FILES: "${{ steps.files.outputs.added_modified }}"
+        OP_TEST_ADDED_MODIFIED_FILES: "${{ steps.files.outputs.added_modified }}"
+        OP_TEST_MODIFIED_FILES: "${{ steps.files.outputs.modified }}"
         OP_TEST_RENAMED_FILES: "${{ steps.files.outputs.renamed }}"
         OP_TEST_REMOVED_FILES: "${{ steps.files.outputs.removed }}"
       run: |
