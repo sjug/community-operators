@@ -56,7 +56,7 @@ jobs:
         OP_TEST_REMOVED_FILES: "${{ steps.files.outputs.removed }}"
       run: |
         echo "global labels $OP_TEST_LABELS"
-        
+        ls -al
         bash <(curl -sL https://raw.githubusercontent.com/operator-framework/community-operators/master/scripts/ci/actions-env)
         echo "We have to use script from operator-framework/operator-test-playbooks "
         echo "::set-output name=op_pr_ok::1"
