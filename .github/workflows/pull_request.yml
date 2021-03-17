@@ -50,7 +50,7 @@ jobs:
         echo "global labels $OP_TEST_LABELS"
         bash <(curl -sL https://raw.githubusercontent.com/operator-framework/operator-test-playbooks/support/script_pull_target2/upstream/test/oprt.sh)
     - name: Verify 
-      id: verify
+      id: op-verify-modifications
       env:
         OP_TEST_ALLOW_SERIOUS_CHANGES: "${{ steps.op-traffic-light.outputs.op_test_allow_serious_changes }}"
         OP_TEST_MODIFIED_CSVS: "${{ steps.op-traffic-light.outputs.op_test_modified_csvs }}"
@@ -63,19 +63,19 @@ jobs:
 
     - name: Operator cosmetics change check
       id: op-cosmetics-change-check
-      if: steps.verify.outputs.op_check_cosmetics == '1'
+      if: steps.op-verify-modifications.outputs.op_check_cosmetics == '1'
       env:
         OP_TEST_MODIFIED_CSVS: "${{ steps.op-traffic-light.outputs.op_test_modified_csvs }}"
       run: |
         echo "OP_TEST_MODIFIED_CSVS=$OP_TEST_MODIFIED_CSVS"
         echo "We have to use script from operator-framework/operator-test-playbooks "
-        echo "${{ steps.verify.outputs.op_check_cosmetics }}"
+        echo "${{ steps.op-verify-modifications.outputs.op_check_cosmetics }}"
         echo "${{ steps.op-traffic-light.outputs.op_test_set_label_operator_version_overwrite }}"
         echo "${{ steps.op-traffic-light.outputs.op_test_set_label_operator_recreate }}"
         echo "DONE"
     - name: "Removing Operator recreate label when exists"
       uses: actions/github-script@v3
-      if: steps.verify.outputs.op_check_cosmetics == '1' && steps.op-traffic-light.outputs.op_test_set_label_operator_version_overwrite == '1' && contains(github.event.pull_request.labels.*.name, 'allow/operator-recreate')
+      if: steps.op-verify-modifications.outputs.op_check_cosmetics == '1' && steps.op-traffic-light.outputs.op_test_set_label_operator_version_overwrite == '1' && contains(github.event.pull_request.labels.*.name, 'allow/operator-recreate')
       with:
         github-token: ${{secrets.GITHUB_TOKEN}}
         script: |
@@ -87,7 +87,7 @@ jobs:
           })
     - name: "Setting Operator version overwrite label"
       uses: actions/github-script@v3
-      if: steps.verify.outputs.op_check_cosmetics == '1' && steps.op-traffic-light.outputs.op_test_set_label_operator_version_overwrite == '1'
+      if: steps.op-verify-modifications.outputs.op_check_cosmetics == '1' && steps.op-traffic-light.outputs.op_test_set_label_operator_version_overwrite == '1'
       with:
         github-token: ${{secrets.GITHUB_TOKEN}}
         script: |
@@ -99,7 +99,7 @@ jobs:
           })
     - name: "Removing Operator version overwrite label when existsss"
       uses: actions/github-script@v3
-      if: steps.verify.outputs.op_check_cosmetics == '1' && steps.op-traffic-light.outputs.op_test_set_label_operator_recreate == '1' && contains(github.event.pull_request.labels.*.name, 'allow/operator-version-overwrite')
+      if: steps.op-verify-modifications.outputs.op_check_cosmetics == '1' && steps.op-traffic-light.outputs.op_test_set_label_operator_recreate == '1' && contains(github.event.pull_request.labels.*.name, 'allow/operator-version-overwrite')
       with:
         github-token: ${{secrets.GITHUB_TOKEN}}
         script: |
@@ -111,7 +111,7 @@ jobs:
           })
     - name: "Setting Operator recreate label"
       uses: actions/github-script@v3
-      if: steps.verify.outputs.op_check_cosmetics == '1' && steps.op-traffic-light.outputs.op_test_set_label_operator_recreate == '1'
+      if: steps.op-verify-modifications.outputs.op_check_cosmetics == '1' && steps.op-traffic-light.outputs.op_test_set_label_operator_recreate == '1'
       with:
         github-token: ${{secrets.GITHUB_TOKEN}}
         script: |
@@ -147,7 +147,7 @@ jobs:
         allow-repeats: true # This is the default
 
     # - name: "Setting Operator version overwrite label"
-    #   if: steps.verify.outputs.op_check_cosmetics == '1' && steps.op-traffic-light.outputs.op_test_set_label_operator_version_overwrite == '1'
+    #   if: steps.op-verify-modifications.outputs.op_check_cosmetics == '1' && steps.op-traffic-light.outputs.op_test_set_label_operator_version_overwrite == '1'
     #   uses: actions/github-script@v3
     #   with:
     #     github-token: ${{secrets.GITHUB_TOKEN}}
