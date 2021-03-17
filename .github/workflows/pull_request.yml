@@ -58,8 +58,10 @@ jobs:
       run: |
         echo ::set-output name=op_check_cosmetics::0
         echo "xxx${OP_TEST_MODIFIED_CSVS_OTHERS}xxx"
-        [ -z $OP_TEST_MODIFIED_CSVS_OTHERS ] || { echo "Not cosmetics change !!!"; }
+        
         [ -z $OP_TEST_MODIFIED_CSVS ] || echo "::set-output name=op_check_cosmetics::1"
+        echo "aaa"
+        [ -z $OP_TEST_MODIFIED_CSVS_OTHERS ] || { echo "Not cosmetics change !!!"; }
         [[ $OP_TEST_ALLOW_SERIOUS_CHANGES -eq 1 ]] && echo "::set-output name=op_check_cosmetics::0"
 
     - name: Operator cosmetics change check
