@@ -70,9 +70,10 @@ jobs:
       run: |
         echo "OP_TEST_MODIFIED_CSVS=$OP_TEST_MODIFIED_CSVS"
         echo "We have to use script from operator-framework/operator-test-playbooks "
-        echo "::set-output name=op_::0"
-
-
+        echo "${{ steps.verify.outputs.op_check_cosmetics }}"
+        echo "${{ steps.op-traffic-light.outputs.op_test_set_label_operator_version_overwrite }}"
+        echo "${{ steps.op-traffic-light.outputs.op_test_set_label_operator_recreate }}"
+        echo "DONE"
     - name: "Setting Operator version overwrite label"
       uses: actions/github-script@v3
       if: steps.verify.outputs.op_check_cosmetics == '1' && steps.op-traffic-light.outputs.op_test_set_label_operator_version_overwrite == '1'
