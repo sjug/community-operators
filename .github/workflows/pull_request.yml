@@ -59,7 +59,7 @@ jobs:
         echo ::set-output name=op_check_cosmetics::$OP_TEST_ALLOW_SERIOUS_CHANGES
         [[ $OP_TEST_ALLOW_SERIOUS_CHANGES -eq 1 ]] && { echo "::set-output name=op_check_cosmetics::0"; exit 0; } || true
         [ -n "$OP_TEST_MODIFIED_CSVS" ] && echo "::set-output name=op_check_cosmetics::1" || true
-        [ -n "$OP_TEST_MODIFIED_CSVS_OTHERS" ] && { echo "Modifying exiting operator version !!! Only cosmetics changes are allowed !!! Files that cannot be changed : '$OP_TEST_MODIFIED_CSVS_OTHERS'"; exit 20; } || true
+        [ -n "$OP_TEST_MODIFIED_CSVS_OTHERS" ] && { echo -e "Error:\n    Modifying exiting operator version !!!\n    Only cosmetics changes are allowed !!!\n    Files that cannot be changed : '$OP_TEST_MODIFIED_CSVS_OTHERS'"; exit 20; } || true
 
     - name: Operator cosmetics change check
       id: op-cosmetics-change-check
