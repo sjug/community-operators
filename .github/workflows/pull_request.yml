@@ -76,7 +76,7 @@ jobs:
         echo "DONE"
     - name: "Setting Operator version overwrite label"
       uses: actions/github-script@v3
-      if: steps.verify.outputs.op_check_cosmetics == '1' && steps.op-traffic-light.outputs.op_test_set_label_operator_version_overwrite == '1'
+      if: steps.verify.outputs.op_check_cosmetics == '1' && steps.op-traffic-light.outputs.op_test_set_label_operator_version_overwrite == '1' && contains(github.event.pull_request.labels.*.name, 'allow/operator-recreate'
       with:
         github-token: ${{secrets.GITHUB_TOKEN}}
         script: |
@@ -98,18 +98,18 @@ jobs:
             repo: context.repo.repo,
             labels: [ 'allow/operator-version-overwrite' ]
           })
-    # - name: "Setting Operator version overwrite label"
-    #   uses: actions/github-script@v3
-    #   if: steps.verify.outputs.op_check_cosmetics == '1' && steps.op-traffic-light.outputs.op_test_set_label_operator_recreate == '1'
-    #   with:
-    #     github-token: ${{secrets.GITHUB_TOKEN}}
-    #     script: |
-    #       github.issues.removeLabel({
-    #         issue_number: context.issue.number,
-    #         owner: context.repo.owner,
-    #         repo: context.repo.repo,
-    #         name: 'allow/operator-version-overwrite'
-    #       })
+    - name: "Setting Operator version overwrite label"
+      uses: actions/github-script@v3
+      if: steps.verify.outputs.op_check_cosmetics == '1' && steps.op-traffic-light.outputs.op_test_set_label_operator_recreate == '1' && contains(github.event.pull_request.labels.*.name, 'allow/operator-version-overwrite'
+      with:
+        github-token: ${{secrets.GITHUB_TOKEN}}
+        script: |
+          github.issues.removeLabel({
+            issue_number: context.issue.number,
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            name: 'allow/operator-version-overwrite'
+          })
     - name: "Setting Operator version overwrite label"
       uses: actions/github-script@v3
       if: steps.verify.outputs.op_check_cosmetics == '1' && steps.op-traffic-light.outputs.op_test_set_label_operator_recreate == '1'
