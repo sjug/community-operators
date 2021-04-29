@@ -1,0 +1,9 @@
+packageName: nvidia-network-operator
+channels:
+- name: nno.v4.6.0
+  currentCSV: nno.v4.6.0
+- name: nno.v4.7.0
+  currentCSV: nno.v4.7.0
+- name: nno.v4.8.0
+  currentCSV: nno.v4.8.0
+defaultChannel: nno.v4.8.0
